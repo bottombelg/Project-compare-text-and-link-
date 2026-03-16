@@ -5,3 +5,6 @@
 
 
 2.https://github.com/allenai/aspire
+
+
+3.https://github.com/princeton-nlp/SimCSE
