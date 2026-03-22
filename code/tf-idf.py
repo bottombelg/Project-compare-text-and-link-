@@ -14,9 +14,9 @@ def split_into_sentences(text):
     return sentences
   
 def compute_similarity(source_text, mention_text):
-    source_text = preprocess(source_text)
-    mention_text = preprocess(mention_text)
     sentences = split_into_sentences(source_text)
+    sentences = [preprocess(s) for s in sentences]
+    mention_text = preprocess(mention_text)
     corpus = sentences + [mention_text]
     vectorizer = TfidfVectorizer(
         ngram_range=(1, 2),     
