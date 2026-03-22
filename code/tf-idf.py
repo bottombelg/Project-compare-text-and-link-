@@ -20,16 +20,14 @@ def compute_similarity(source_text, mention_text):
     corpus = sentences + [mention_text]
     vectorizer = TfidfVectorizer(
         ngram_range=(1, 2),     
-        stop_words='russian',  
         max_features=5000
     )
     tfidf_matrix = vectorizer.fit_transform(corpus)
     mention_vec = tfidf_matrix[-1]
     similarities = cosine_similarity(mention_vec, tfidf_matrix[:-1])[0]
     max_score = np.max(similarities)
-    best_sentence = sentences[np.argmax(similarities)]
-
-    return max_score, best_sentence
+    return max_score
+    
 with open("file1.txt") as f :
   mention = f.read()
 with open("file2.txt") as f :
