@@ -1,14 +1,37 @@
+import re
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-with open("file1.txt") as f :
-  source_text = f.read()
-with open("file2.txt") as f :
-  mention_text = f.read()
+def preprocess(text):
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)  
+    return text
+
+def split_into_sentences(text):
+    sentences = re.split(r'[.!?]', text)
+    sentences = [s.strip() for s in sentences if len(s.strip()) > 0]
+    return sentences
   
-vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform([source_text, mention_text])
+def compute_similarity(source_text, mention_text):
+    source_text = preprocess(source_text)
+    mention_text = preprocess(mention_text)
+    sentences = split_into_sentences(source_text)
+    corpus = sentences + [mention_text]
+    vectorizer = TfidfVectorizer(
+        ngram_range=(1, 2),     
+        stop_words='russian',  
+        max_features=5000
+    )
+    tfidf_matrix = vectorizer.fit_transform(corpus)
+    mention_vec = tfidf_matrix[-1]
+    similarities = cosine_similarity(mention_vec, tfidf_matrix[:-1])[0]
+    max_score = np.max(similarities)
+    best_sentence = sentences[np.argmax(similarities)]
 
-similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
-
-print(similarity[0][0])
+    return max_score, best_sentence
+with open("file1.txt") as f :
+  mention = f.read()
+with open("file2.txt") as f :
+  source = f.read()
+print(compute_similarity(source,mention))
