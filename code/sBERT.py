@@ -19,7 +19,7 @@ def preprocess(text):
 def split_into_sentences(text):
     sentences = re.split(r'[.!?]', text)
     return [s.strip() for s in sentences if s.strip()]
-  
+
 def build_windows(sentences, window_size=WINDOW_SIZE):
     windows = []
     for i in range(len(sentences)):
@@ -28,13 +28,12 @@ def build_windows(sentences, window_size=WINDOW_SIZE):
             windows.append(window)
     return windows
 
-
 def top_k_mean(scores, k=TOP_K):
     flat = scores.flatten()
     k = min(k, flat.shape[0])
     topk = torch.topk(flat, k).values
     return topk.mean().item()
-
+    
 def compute_similarity(source_text, mention_text):
     source_sentences = split_into_sentences(source_text)
     mention_sentences = split_into_sentences(mention_text)
@@ -42,30 +41,25 @@ def compute_similarity(source_text, mention_text):
         return 0.0
     source_windows = build_windows(source_sentences)
     mention_windows = build_windows(mention_sentences)
-  
     source_windows = [preprocess(s) for s in source_windows]
     mention_windows = [preprocess(s) for s in mention_windows]
-
     source_embs = model.encode(
         source_windows,
         convert_to_tensor=True,
         normalize_embeddings=True
     )
-  
     mention_embs = model.encode(
         mention_windows,
         convert_to_tensor=True,
         normalize_embeddings=True
     )
-
     scores = util.cos_sim(mention_embs, source_embs)
     score = top_k_mean(scores, k=TOP_K)
+
     return score
-
+    
 with open("file1.txt") as f:
-  mention = f.read()
-
+     mention = f.read()
 with open("file2.txt") as f:
-  source = f.read()
-
+    source = f.read()
 print("Similarity:", compute_similarity(source, mention))
