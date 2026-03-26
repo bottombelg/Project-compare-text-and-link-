@@ -2,7 +2,7 @@ import re
 import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer, util
-
+import json
 model = SentenceTransformer('all-mpnet-base-v2')
 
 WINDOW_SIZE = 2
@@ -57,9 +57,14 @@ def compute_similarity(source_text, mention_text):
     score = top_k_mean(scores, k=TOP_K)
 
     return score
-    
-with open("file1.txt") as f:
-     mention = f.read()
-with open("file2.txt") as f:
-    source = f.read()
-print("Similarity:", compute_similarity(source, mention))
+
+with open("scifact_pairs.jsonl") as f :
+    a = []
+    count = 0
+    for line in f :
+        count += 1
+        a.append(json.loads(line))
+        if count == 5 :
+            break
+for el in a :
+    print(compute_similarity(el["document"],el["claim"]),' ',el["label"])
