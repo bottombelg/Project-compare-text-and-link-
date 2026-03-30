@@ -90,7 +90,7 @@ def main():
     corpus = load_corpus(CORPUS_PATH)
     train_examples, raw_labels = load_claim_abstract_examples(CLAIMS_TRAIN_PATH, corpus)
     if len(train_examples) == 0:
-        raise ValueError("train_examples пуст. Проверьте структуру claims_train и corpus.")
+        raise ValueError("train_examples пуст")
     score_counter = Counter(ex.label for ex in train_examples)
     model = SentenceTransformer(MODEL_NAME, device="cpu")
 
