@@ -17,7 +17,6 @@ WARMUP_RATIO = 0.1
 MAX_LEN = 256
 SEED = 42
 
-
 def set_seed(seed=42):
     random.seed(seed)
 
@@ -85,35 +84,20 @@ def load_claim_abstract_examples(claims_path, corpus):
     return examples, raw_labels
 
 
-def main():
-    set_seed(SEED)
-    corpus = load_corpus(CORPUS_PATH)
-    train_examples, raw_labels = load_claim_abstract_examples(CLAIMS_TRAIN_PATH, corpus)
-    if len(train_examples) == 0:
-        raise ValueError("train_examples пуст")
-    score_counter = Counter(ex.label for ex in train_examples)
-    model = SentenceTransformer(MODEL_NAME, device="cpu")
+set_seed(SEED)
+corpus = load_corpus(CORPUS_PATH)
+train_examples, raw_labels = load_claim_abstract_examples(CLAIMS_TRAIN_PATH, corpus)
+if len(train_examples) == 0:
+    raise ValueError("train_examples пуст")
+score_counter = Counter(ex.label for ex in train_examples)
+model = SentenceTransformer(MODEL_NAME, device="cpu")
 
-    train_dataloader = DataLoader(
-        train_examples,
-        shuffle=True,
-        batch_size=BATCH_SIZE
-    )
+train_dataloader = DataLoader(train_examples,shuffle=True,batch_size=BATCH_SIZE)
+train_loss = losses.CosineSimilarityLoss(model)
+warmup_steps = max(1, int(len(train_dataloader) * EPOCHS * WARMUP_RATIO))
 
-    train_loss = losses.CosineSimilarityLoss(model)
-
-    warmup_steps = max(1, int(len(train_dataloader) * EPOCHS * WARMUP_RATIO))
-    model.fit(
-        train_objectives=[(train_dataloader, train_loss)],
-        epochs=EPOCHS,
-        warmup_steps=warmup_steps,
-        optimizer_params={"lr": LEARNING_RATE},
-        output_path=OUTPUT_DIR,
-        show_progress_bar=True
-    )
-
-    print(f"Model saved to: {OUTPUT_DIR}")
-
-
-if __name__ == "__main__":
-    main()
+model.fit(train_objectives=[(train_dataloader, train_loss)],
+          epochs=EPOCHS,warmup_steps=warmup_steps,
+          optimizer_params={"lr": LEARNING_RATE},
+          output_path=OUTPUT_DIR,
+          show_progress_bar=True)
