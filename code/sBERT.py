@@ -3,10 +3,10 @@ import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer, util
 import json
-model = SentenceTransformer('all-mpnet-base-v2')
+model = SentenceTransformer('./scifact_sbert_claim_abstract_cpu')
 
-WINDOW_SIZE = 2
-TOP_K = 3
+WINDOW_SIZE = 3
+TOP_K = 5
 
 def preprocess(text):
     if not text:
@@ -55,16 +55,30 @@ def compute_similarity(source_text, mention_text):
     )
     scores = util.cos_sim(mention_embs, source_embs)
     score = top_k_mean(scores, k=TOP_K)
-
     return score
-
-with open("scifact_pairs.jsonl") as f :
-    a = []
+    
+with open("corpus.jsonl") as f :
+    b = []
     count = 0
     for line in f :
         count += 1
-        a.append(json.loads(line))
-        if count == 5 :
+        a = json.loads(line)['abstract']
+        strsum = " ".join(a)
+        b.append(strsum)
+        if(count == 2) :
             break
-for el in a :
-    print(compute_similarity(el["document"],el["claim"]),' ',el["label"])
+with open("claims_test.jsonl") as f :
+    test = []
+    count = 0
+    for line in f :
+        count += 1
+        test.append(json.loads(line)['claim'])
+        if count == 2 :
+            break
+for elem in b :
+    for j in test :
+        print(compute_similarity(elem,j))
+        print("source :", elem)
+        print("mention:", j)
+        print()
+
